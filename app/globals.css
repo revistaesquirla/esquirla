@@ -1,0 +1,178 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --carbon: #0d0c0b;
+    --paper: #f1ede4;
+    --rojo: #e02118;
+    --rojo-oscuro: #6b0f0a;
+    --cemento: #8b8983;
+  }
+
+  * {
+    border-radius: 0;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--paper);
+    color: var(--carbon);
+    font-family: var(--font-sans), system-ui, sans-serif;
+    /* Grano sutil: textura de fotocopia, no decoración pesada. */
+    background-image: radial-gradient(rgba(13, 12, 11, 0.055) 1px, transparent 1px);
+    background-size: 3px 3px;
+  }
+
+  ::selection {
+    background: var(--rojo);
+    color: var(--paper);
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--rojo);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* Marca de la revista: comprimida, apretada, gritada. */
+  .wordmark {
+    font-family: var(--font-display), Impact, sans-serif;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+    line-height: 0.86;
+  }
+
+  .titular {
+    font-family: var(--font-display), Impact, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: -0.03em;
+    line-height: 0.88;
+  }
+
+  .dato {
+    font-family: var(--font-mono), monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .rule {
+    border-top: 2px solid var(--carbon);
+  }
+
+  .boton {
+    @apply inline-flex items-center justify-center gap-2 border-2 border-carbon bg-carbon px-5 py-3 font-mono text-xs uppercase tracking-[0.18em] text-paper transition-transform duration-150;
+  }
+  .boton:hover {
+    @apply -translate-y-0.5 bg-rojo;
+  }
+  .boton:active {
+    @apply translate-y-0;
+  }
+  .boton:disabled {
+    @apply cursor-not-allowed border-cemento bg-cemento text-paper/70;
+  }
+  .boton:disabled:hover {
+    @apply translate-y-0 bg-cemento;
+  }
+
+  .boton-fantasma {
+    @apply inline-flex items-center justify-center gap-2 border-2 border-carbon bg-transparent px-5 py-3 font-mono text-xs uppercase tracking-[0.18em] text-carbon transition-colors duration-150;
+  }
+  .boton-fantasma:hover {
+    @apply bg-carbon text-paper;
+  }
+
+  .boton-peligro {
+    @apply inline-flex items-center justify-center gap-2 border-2 border-rojo-oscuro bg-transparent px-4 py-2 font-mono text-xs uppercase tracking-[0.18em] text-rojo-oscuro transition-colors duration-150;
+  }
+  .boton-peligro:hover {
+    @apply bg-rojo-oscuro text-paper;
+  }
+
+  .campo {
+    @apply w-full border-2 border-carbon bg-paper px-3 py-2.5 font-sans text-base text-carbon placeholder:text-cemento;
+  }
+  .campo:focus {
+    @apply outline-none ring-0;
+    border-color: var(--rojo);
+  }
+
+  .etiqueta {
+    @apply mb-1.5 block font-mono text-[0.68rem] uppercase tracking-[0.16em] text-carbon/70;
+  }
+
+  .marco {
+    @apply border-2 border-carbon bg-paper;
+  }
+
+  /* Artículos escritos con TipTap */
+  .prosa {
+    @apply text-[1.06rem] leading-[1.75];
+  }
+  .prosa > * + * {
+    @apply mt-5;
+  }
+  .prosa h2 {
+    font-family: var(--font-display), Impact, sans-serif;
+    @apply mt-12 text-2xl uppercase leading-none tracking-tight sm:text-3xl;
+  }
+  .prosa h3 {
+    @apply mt-9 text-lg font-bold uppercase tracking-wide;
+  }
+  .prosa a {
+    @apply underline decoration-rojo decoration-2 underline-offset-4;
+  }
+  .prosa a:hover {
+    @apply bg-rojo text-paper no-underline;
+  }
+  .prosa blockquote {
+    @apply border-l-4 border-rojo pl-5 text-xl italic leading-snug;
+  }
+  .prosa ul {
+    @apply list-disc pl-6;
+  }
+  .prosa ol {
+    @apply list-decimal pl-6;
+  }
+  .prosa li + li {
+    @apply mt-2;
+  }
+  .prosa img {
+    @apply w-full border-2 border-carbon;
+  }
+  .prosa hr {
+    @apply my-10 border-t-2 border-carbon;
+  }
+  .prosa code {
+    @apply bg-carbon px-1.5 py-0.5 font-mono text-sm text-paper;
+  }
+}
+
+@layer utilities {
+  .cinta {
+    background-image: repeating-linear-gradient(
+      45deg,
+      var(--rojo) 0 10px,
+      var(--carbon) 10px 20px
+    );
+  }
+}
