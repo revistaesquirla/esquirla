@@ -5,7 +5,8 @@ import { redirect } from 'next/navigation';
 import { requireAdmin } from '@/lib/supabase/guards';
 import { createClient } from '@/lib/supabase/server';
 import { editionSchema, toFieldErrors } from '@/lib/validators';
-import { MEDIA_BUCKET, PDF_BUCKET } from '@/lib/constants';
+import { MEDIA_BUCKET } from '@/lib/constants';
+import { deletePdfObject } from '@/lib/pdf-storage';
 import type { ActionResult, ContentStatus, Edition } from '@/types/database';
 
 function readForm(formData: FormData) {
@@ -110,9 +111,9 @@ export async function updateEdition(
 
   const { data: current } = await supabase
     .from('editions')
-    .select('published_at, cover_path, pdf_path')
+    .select('published_at, cover_path, pdf_path, pdf_url')
     .eq('id', id)
-    .maybeSingle<Pick<Edition, 'published_at' | 'cover_path' | 'pdf_path'>>();
+    .maybeSingle<Pick<Edition, 'published_at' | 'cover_path' | 'pdf_path' | 'pdf_url'>>();
 
   const { error } = await supabase
     .from('editions')
@@ -199,15 +200,15 @@ export async function deleteEdition(id: string): Promise<ActionResult> {
 
   const { data: edition } = await supabase
     .from('editions')
-    .select('cover_path, pdf_path')
+    .select('cover_path, pdf_path, pdf_url')
     .eq('id', id)
-    .maybeSingle<Pick<Edition, 'cover_path' | 'pdf_path'>>();
+    .maybeSingle<Pick<Edition, 'cover_path' | 'pdf_path' | 'pdf_url'>>();
 
   const { error } = await supabase.from('editions').delete().eq('id', id);
   if (error) return { ok: false, error: 'No se pudo eliminar la edición.' };
 
   if (edition?.cover_path) await supabase.storage.from(MEDIA_BUCKET).remove([edition.cover_path]);
-  if (edition?.pdf_path) await supabase.storage.from(PDF_BUCKET).remove([edition.pdf_path]);
+  if (edition?.pdf_path) await deletePdfObject(edition.pdf_path, edition.pdf_url);
 
   revalidateEditions(id);
   redirect('/admin/ediciones?eliminada=1');
@@ -233,7 +234,10 @@ function resolvePublishedAt(
 }
 
 async function removeReplacedFiles(
-  current: { cover_path: string | null; pdf_path: string | null } | null | undefined,
+  current:
+    | { cover_path: string | null; pdf_path: string | null; pdf_url: string | null }
+    | null
+    | undefined,
   nextCover: string | null | undefined,
   nextPdf: string | null | undefined,
 ) {
@@ -244,6 +248,6 @@ async function removeReplacedFiles(
     await supabase.storage.from(MEDIA_BUCKET).remove([current.cover_path]);
   }
   if (current.pdf_path && current.pdf_path !== nextPdf) {
-    await supabase.storage.from(PDF_BUCKET).remove([current.pdf_path]);
+    await deletePdfObject(current.pdf_path, current.pdf_url);
   }
 }

@@ -14,8 +14,8 @@ export const MEDIA_FOLDERS = {
 
 export type MediaFolder = (typeof MEDIA_FOLDERS)[keyof typeof MEDIA_FOLDERS];
 
-/** Debe coincidir con file_size_limit de los buckets en 03_storage.sql. */
-export const MAX_PDF_BYTES = 50 * 1024 * 1024; // 50 MB
+/** Los PDF ahora viven en Cloudflare R2: 350 MB de colchón sobre los 300 reales. */
+export const MAX_PDF_BYTES = 350 * 1024 * 1024; // 350 MB
 export const MAX_IMAGE_BYTES = 8 * 1024 * 1024; // 8 MB
 
 export const ACCEPTED_IMAGE_TYPES = [

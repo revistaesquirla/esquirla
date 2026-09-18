@@ -111,7 +111,7 @@ function useUploader({ kind, value, onChange }: Pick<BaseProps, 'kind' | 'value'
 
   async function remove() {
     if (value.path) {
-      await deleteStorageObject(isPdf ? PDF_BUCKET : MEDIA_BUCKET, value.path);
+      await deleteStorageObject(isPdf ? PDF_BUCKET : MEDIA_BUCKET, value.path, value.url);
     }
     onChange({ path: null, url: null, size: null, name: null });
     setError(null);

@@ -3,6 +3,7 @@
 import { randomUUID } from 'node:crypto';
 import { requireAdmin } from '@/lib/supabase/guards';
 import { createClient } from '@/lib/supabase/server';
+import { createPdfUploadTicket, deletePdfObject } from '@/lib/pdf-storage';
 import {
   ACCEPTED_IMAGE_TYPES,
   MAX_IMAGE_BYTES,
@@ -31,9 +32,8 @@ function publicUrlFor(bucket: string, path: string) {
 /**
  * Genera una URL firmada para subir un archivo.
  *
- * Aquí se valida tipo y tamaño en el servidor. Aunque alguien manipule
- * el formulario, no obtiene la URL. Y aunque la obtuviera, el bucket de
- * Supabase tiene sus propios límites de mime-type y tamaño.
+ * Los PDF se firman contra Cloudflare R2 (sin límite práctico de tamaño).
+ * Las imágenes siguen firmándose contra Supabase Storage, sin cambios.
  */
 export async function createUploadTicket(input: {
   kind: UploadKind;
@@ -76,7 +76,6 @@ export async function createUploadTicket(input: {
     return { ok: false, error: 'El archivo está vacío.' };
   }
 
-  const bucket = isPdf ? PDF_BUCKET : MEDIA_BUCKET;
   const folder = isPdf
     ? 'ediciones'
     : kind === 'edition-cover'
@@ -88,8 +87,20 @@ export async function createUploadTicket(input: {
   const extension = safeExtension(fileName, isPdf ? 'pdf' : 'webp');
   const path = `${folder}/${randomUUID()}.${extension}`;
 
+  if (isPdf) {
+    try {
+      const ticket = await createPdfUploadTicket(path);
+      return { ok: true, data: ticket };
+    } catch {
+      return {
+        ok: false,
+        error: 'No se pudo preparar la subida del PDF. Revisa la configuración de R2.',
+      };
+    }
+  }
+
   const supabase = await createClient();
-  const { data, error } = await supabase.storage.from(bucket).createSignedUploadUrl(path);
+  const { data, error } = await supabase.storage.from(MEDIA_BUCKET).createSignedUploadUrl(path);
 
   if (error || !data) {
     return { ok: false, error: 'No se pudo preparar la subida. Inténtalo de nuevo.' };
@@ -100,21 +111,34 @@ export async function createUploadTicket(input: {
     data: {
       signedUrl: data.signedUrl,
       path,
-      bucket,
-      publicUrl: publicUrlFor(bucket, path),
+      bucket: MEDIA_BUCKET,
+      publicUrl: publicUrlFor(MEDIA_BUCKET, path),
     },
   };
 }
 
 /** Borra un archivo de Storage. Se usa al reemplazar o eliminar contenido. */
-export async function deleteStorageObject(bucket: string, path: string): Promise<ActionResult> {
+export async function deleteStorageObject(
+  bucket: string,
+  path: string,
+  url?: string | null,
+): Promise<ActionResult> {
   try {
     await requireAdmin();
   } catch {
     return { ok: false, error: 'No tienes permiso para borrar archivos.' };
   }
 
-  if (![MEDIA_BUCKET, PDF_BUCKET].includes(bucket)) {
+  if (bucket === PDF_BUCKET) {
+    try {
+      await deletePdfObject(path, url);
+      return { ok: true };
+    } catch {
+      return { ok: false, error: 'No se pudo borrar el archivo.' };
+    }
+  }
+
+  if (bucket !== MEDIA_BUCKET) {
     return { ok: false, error: 'Ubicación de archivo desconocida.' };
   }
 
