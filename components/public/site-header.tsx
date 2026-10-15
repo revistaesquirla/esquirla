@@ -4,11 +4,20 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { NAV_LINKS } from '@/lib/constants';
-import { cn } from '@/lib/utils';
+import { InstagramIcon } from '@/components/public/instagram-icon';
+import { cn, instagramHandle, instagramUrl } from '@/lib/utils';
 
-export function SiteHeader({ magazineName }: { magazineName: string }) {
+export function SiteHeader({
+  magazineName,
+  instagram,
+}: {
+  magazineName: string;
+  instagram: string | null;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const igUrl = instagramUrl(instagram);
+  const igHandle = instagramHandle(instagram);
 
   return (
     <header className="sticky top-0 z-40 border-b-2 border-carbon bg-paper/95 backdrop-blur">
@@ -28,27 +37,41 @@ export function SiteHeader({ magazineName }: { magazineName: string }) {
           <span className="wordmark text-2xl sm:text-3xl">{magazineName}</span>
         </Link>
 
-        <nav aria-label="Principal" className="hidden md:block">
-          <ul className="flex items-center gap-1">
-            {NAV_LINKS.map((link) => {
-              const active =
-                link.href === '/' ? pathname === '/' : pathname.startsWith(link.href);
-              return (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className={cn(
-                      'block px-3 py-2 font-mono text-[0.72rem] uppercase tracking-[0.16em] transition-colors',
-                      active ? 'bg-carbon text-paper' : 'hover:bg-rojo hover:text-paper',
-                    )}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
+        <div className="hidden items-center gap-1 md:flex">
+          <nav aria-label="Principal">
+            <ul className="flex items-center gap-1">
+              {NAV_LINKS.map((link) => {
+                const active =
+                  link.href === '/' ? pathname === '/' : pathname.startsWith(link.href);
+                return (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className={cn(
+                        'block px-3 py-2 font-mono text-[0.72rem] uppercase tracking-[0.16em] transition-colors',
+                        active ? 'bg-carbon text-paper' : 'hover:bg-rojo hover:text-paper',
+                      )}
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+
+          {igUrl ? (
+            <a
+              href={igUrl}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`Instagram${igHandle ? `: ${igHandle}` : ''}`}
+              className="ml-2 border-2 border-carbon p-2 transition-colors hover:bg-rojo hover:text-paper"
+            >
+              <InstagramIcon className="h-4 w-4" />
+            </a>
+          ) : null}
+        </div>
 
         <button
           type="button"
@@ -76,6 +99,18 @@ export function SiteHeader({ magazineName }: { magazineName: string }) {
               </li>
             ))}
           </ul>
+          {igUrl ? (
+            <a
+              href={igUrl}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 border-t-2 border-carbon px-5 py-3.5 font-mono text-xs uppercase tracking-[0.18em]"
+            >
+              <InstagramIcon className="h-4 w-4" />
+              {igHandle ?? 'Instagram'}
+            </a>
+          ) : null}
         </nav>
       ) : null}
     </header>

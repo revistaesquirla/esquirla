@@ -54,5 +54,6 @@ export const ADMIN_LINKS = [
   { href: '/admin/ediciones', label: 'Ediciones' },
   { href: '/admin/posts', label: 'Posts' },
   { href: '/admin/fragmentos', label: 'Fragmentos' },
+  { href: '/admin/solicitudes', label: 'Solicitudes' },   // ← esta línea es nueva
   { href: '/admin/configuracion', label: 'Configuración' },
 ];

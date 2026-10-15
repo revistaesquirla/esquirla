@@ -74,3 +74,24 @@ export function safeExtension(fileName: string, fallback: string) {
   const match = /\.([a-z0-9]{1,5})$/i.exec(fileName.trim());
   return match ? match[1].toLowerCase() : fallback;
 }
+
+/** Acepta "revistaesquirla", "@revistaesquirla" o una URL completa. */
+export function instagramUrl(value: string | null | undefined) {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  const handle = trimmed.replace(/^@/, '');
+  return handle ? `https://instagram.com/${handle}` : null;
+}
+
+export function instagramHandle(value: string | null | undefined) {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (/^https?:\/\//i.test(trimmed)) {
+    const match = /instagram\.com\/([^/?]+)/i.exec(trimmed);
+    return match ? `@${match[1]}` : trimmed;
+  }
+  return `@${trimmed.replace(/^@/, '')}`;
+}

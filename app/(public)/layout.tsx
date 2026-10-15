@@ -9,7 +9,7 @@ export default async function PublicLayout({ children }: { children: React.React
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <SiteHeader magazineName={magazineName} />
+      <SiteHeader magazineName={magazineName} instagram={settings?.instagram ?? null} />
       <main id="contenido" className="flex-1">
         {children}
       </main>

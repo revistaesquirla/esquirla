@@ -4,6 +4,7 @@ import { EditionCard } from '@/components/public/edition-card';
 import { EmptyState } from '@/components/public/empty-state';
 import { Marquee } from '@/components/public/marquee';
 import { PostCard } from '@/components/public/post-card';
+import { FragmentForm } from '@/components/public/submission-forms';
 import {
   getFeaturedEdition,
   getPublishedEditions,
@@ -24,7 +25,6 @@ export default async function HomePage() {
 
   const otherEditions = editions.filter((edition) => edition.id !== featured?.id).slice(0, 3);
 
-  // La cinta se arma con contenido real: categorías y títulos que existen.
   const marqueeItems = [
     ...posts.map((post) => post.category?.name ?? post.title),
     ...editions.slice(0, 4).map((edition) => `Edición ${padIssue(edition.issue_number)}`),
@@ -32,7 +32,6 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* ── HERO: la edición destacada sale de la base de datos ── */}
       <section className="border-b-2 border-carbon">
         {featured ? (
           <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-14 lg:grid-cols-[1.1fr_0.9fr] lg:py-20">
@@ -98,13 +97,15 @@ export default async function HomePage() {
       {marqueeItems.length > 0 ? <Marquee items={marqueeItems} /> : null}
 
       {/* ── FRAGMENTOS ── */}
-      {fragments.length > 0 ? (
-        <section className="mx-auto max-w-6xl px-5 py-16">
-          <div className="flex items-baseline justify-between gap-4">
-            <h2 className="titular text-4xl sm:text-5xl">Fragmentos</h2>
+      <section id="fragmentos" className="mx-auto max-w-6xl px-5 py-16">
+        <div className="flex items-baseline justify-between gap-4">
+          <h2 className="titular text-4xl sm:text-5xl">Fragmentos</h2>
+          {fragments.length > 0 ? (
             <span className="dato text-carbon/50">{fragments.length} piezas</span>
-          </div>
+          ) : null}
+        </div>
 
+        {fragments.length > 0 ? (
           <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {fragments.map((fragment, index) => (
               <li
@@ -125,9 +126,7 @@ export default async function HomePage() {
                   />
                 ) : null}
 
-                {fragment.body ? (
-                  <p className="text-lg leading-snug">{fragment.body}</p>
-                ) : null}
+                {fragment.body ? <p className="text-lg leading-snug">{fragment.body}</p> : null}
 
                 <p className="dato mt-4 opacity-60">
                   {fragment.post ? (
@@ -135,16 +134,34 @@ export default async function HomePage() {
                       {fragment.post.title}
                     </Link>
                   ) : (
-                    fragment.attribution ?? 'Esquirla'
+                    (fragment.attribution ?? 'Esquirla')
                   )}
                 </p>
               </li>
             ))}
           </ul>
-        </section>
-      ) : null}
+        ) : (
+          <div className="mt-8">
+            <EmptyState
+              title="Aún no hay fragmentos"
+              description="Sé la primera persona en dejar el suyo."
+            />
+          </div>
+        )}
 
-      {/* ── POSTS RECIENTES ── */}
+        <details className="mt-8 border-2 border-carbon">
+          <summary className="cursor-pointer px-5 py-4 font-mono text-xs uppercase tracking-[0.16em] transition-colors hover:bg-rojo hover:text-paper">
+            Escribe tu fragmento
+          </summary>
+          <div className="border-t-2 border-carbon p-5">
+            <p className="mb-5 max-w-xl text-sm text-carbon/70">
+              Lo revisa el equipo antes de publicarlo. Si lo aprueban, aparece aquí.
+            </p>
+            <FragmentForm />
+          </div>
+        </details>
+      </section>
+
       <section className="mx-auto max-w-6xl px-5 py-16">
         <div className="flex items-baseline justify-between gap-4">
           <h2 className="titular text-4xl sm:text-5xl">Lo último</h2>
@@ -165,7 +182,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── OTRAS EDICIONES ── */}
       {otherEditions.length > 0 ? (
         <section className="mx-auto max-w-6xl px-5 pb-16">
           <div className="flex items-baseline justify-between gap-4">

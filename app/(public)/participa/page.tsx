@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
 import { getSettings } from '@/lib/queries';
+import { InstagramIcon } from '@/components/public/instagram-icon';
+import { ParticipaForm } from '@/components/public/submission-forms';
+import { instagramHandle, instagramUrl } from '@/lib/utils';
 
 export const revalidate = 300;
 
@@ -9,36 +12,20 @@ export const metadata: Metadata = {
 };
 
 const WAYS = [
-  {
-    title: 'Manda fotos',
-    text: 'De un ensayo, de un partido, del salón a las 6:40 de la mañana. Sin retoque ni pose.',
-  },
-  {
-    title: 'Propón una historia',
-    text: 'Algo que pasó y que crees que merece contarse bien. No hace falta que la escribas tú.',
-  },
-  {
-    title: 'Envía ilustraciones',
-    text: 'Dibujo, collage, tipografía, lo que estés haciendo en tu cuaderno.',
-  },
-  {
-    title: 'Recomienda música',
-    text: 'Para la sección RUIDO. Una canción y dos líneas explicando por qué.',
-  },
-  {
-    title: 'Deja que te entrevistemos',
-    text: 'O propón a alguien del colegio que te parezca que vale la pena escuchar.',
-  },
-  {
-    title: 'Arma la próxima edición',
-    text: 'Edición, diseño, corrección, fotografía. Se aprende haciéndolo.',
-  },
+  { title: 'Manda fotos', text: 'De un ensayo, de un partido, del salón a las 6:40 de la mañana. Sin retoque ni pose.' },
+  { title: 'Propón una historia', text: 'Algo que pasó y que crees que merece contarse bien. No hace falta que la escribas tú.' },
+  { title: 'Envía ilustraciones', text: 'Dibujo, collage, tipografía, lo que estés haciendo en tu cuaderno.' },
+  { title: 'Recomienda música', text: 'Para la sección RUIDO. Una canción y dos líneas explicando por qué.' },
+  { title: 'Deja que te entrevistemos', text: 'O propón a alguien del colegio que te parezca que vale la pena escuchar.' },
+  { title: 'Arma la próxima edición', text: 'Edición, diseño, corrección, fotografía. Se aprende haciéndolo.' },
 ];
 
 export default async function ParticipaPage() {
   const settings = await getSettings().catch(() => null);
   const customText = settings?.participa_text;
   const email = settings?.contact_email;
+  const igUrl = instagramUrl(settings?.instagram ?? null);
+  const igHandle = instagramHandle(settings?.instagram ?? null);
 
   return (
     <div className="mx-auto max-w-4xl px-5 py-12 sm:py-16">
@@ -63,25 +50,34 @@ export default async function ParticipaPage() {
         </ul>
       )}
 
-      <section className="mt-12 border-2 border-carbon p-8">
-        <h2 className="titular text-3xl">Cómo enviarlo</h2>
-        {email ? (
-          <>
-            <p className="mt-3 text-carbon/80">Escribe a este correo y cuéntanos qué tienes.</p>
-            <a href={`mailto:${email}`} className="boton mt-6">
-              {email}
-            </a>
-          </>
-        ) : (
-          <p className="mt-3 max-w-lg text-carbon/80">
-            Todavía no hay un correo publicado. Un administrador puede agregarlo desde el panel, en
-            Configuración, y aparecerá aquí.
-          </p>
-        )}
-        <p className="dato mt-8 text-carbon/45">
-          Próximamente: formulario para enviar archivos directamente desde esta página.
+      <section id="formulario" className="mt-12 border-2 border-carbon p-8">
+        <h2 className="titular text-3xl">Envíanos tu propuesta</h2>
+        <p className="mt-3 max-w-lg text-carbon/80">
+          Cuéntanos qué quieres aportar. El equipo lo revisa y te responde.
         </p>
+        <div className="mt-6">
+          <ParticipaForm />
+        </div>
       </section>
+
+      {email || igUrl ? (
+        <section className="mt-8 border-2 border-carbon p-8">
+          <h2 className="titular text-2xl">¿Prefieres escribirnos directo?</h2>
+          <div className="mt-4 flex flex-wrap gap-3">
+            {email ? (
+              <a href={`mailto:${email}`} className="boton">
+                {email}
+              </a>
+            ) : null}
+            {igUrl ? (
+              <a href={igUrl} target="_blank" rel="noreferrer" className="boton-fantasma inline-flex items-center gap-2">
+                <InstagramIcon className="h-4 w-4" />
+                {igHandle}
+              </a>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }

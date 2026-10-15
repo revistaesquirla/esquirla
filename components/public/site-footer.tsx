@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { NAV_LINKS } from '@/lib/constants';
 import { COLEGIO, GRUPO_CREADOR } from '@/lib/credits';
+import { InstagramIcon } from '@/components/public/instagram-icon';
+import { instagramHandle, instagramUrl } from '@/lib/utils';
 
 export function SiteFooter({
   magazineName,
@@ -13,6 +15,9 @@ export function SiteFooter({
   contactEmail: string | null;
   instagram: string | null;
 }) {
+  const igUrl = instagramUrl(instagram);
+  const igHandle = instagramHandle(instagram);
+
   return (
     <footer className="mt-24 border-t-2 border-carbon bg-carbon text-paper">
       <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 sm:grid-cols-2">
@@ -28,6 +33,18 @@ export function SiteFooter({
             <p className="wordmark text-5xl sm:text-6xl">{magazineName}</p>
           </div>
           {tagline ? <p className="mt-4 max-w-xs text-paper/70">{tagline}</p> : null}
+
+          {igUrl ? (
+            <a
+              href={igUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-5 inline-flex items-center gap-2 border-2 border-paper/30 px-3 py-2 font-mono text-[0.7rem] uppercase tracking-[0.14em] transition-colors hover:border-rojo hover:bg-rojo"
+            >
+              <InstagramIcon className="h-4 w-4" />
+              Síguenos en Instagram
+            </a>
+          ) : null}
         </div>
 
         <div className="flex flex-col gap-8 sm:items-end">
@@ -54,7 +71,13 @@ export function SiteFooter({
                 </a>
               </p>
             ) : null}
-            {instagram ? <p>{instagram}</p> : null}
+            {igHandle ? (
+              <p>
+                <a href={igUrl ?? undefined} target="_blank" rel="noreferrer" className="hover:text-rojo">
+                  {igHandle}
+                </a>
+              </p>
+            ) : null}
             <p>{new Date().getFullYear()}</p>
           </div>
         </div>
