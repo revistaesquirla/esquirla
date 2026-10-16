@@ -7,10 +7,11 @@ export const revalidate = 3600;
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteUrl();
 
-  const staticRoutes: MetadataRoute.Sitemap = [
+   const staticRoutes: MetadataRoute.Sitemap = [
     '',
     '/ediciones',
     '/posts',
+    '/calendario',
     '/sobre',
     '/participa',
   ].map((path) => ({ url: `${base}${path}`, lastModified: new Date() }));

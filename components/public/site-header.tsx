@@ -37,7 +37,7 @@ export function SiteHeader({
           <span className="wordmark text-2xl sm:text-3xl">{magazineName}</span>
         </Link>
 
-        <div className="hidden items-center gap-1 md:flex">
+        <div className="hidden items-center gap-1 lg:flex">
           <nav aria-label="Principal">
             <ul className="flex items-center gap-1">
               {NAV_LINKS.map((link) => {
@@ -78,14 +78,14 @@ export function SiteHeader({
           onClick={() => setOpen((value) => !value)}
           aria-expanded={open}
           aria-controls="menu-movil"
-          className="border-2 border-carbon px-3 py-2 font-mono text-[0.7rem] uppercase tracking-[0.16em] md:hidden"
+          className="border-2 border-carbon px-3 py-2 font-mono text-[0.7rem] uppercase tracking-[0.16em] lg:hidden"
         >
           {open ? 'Cerrar' : 'Menú'}
         </button>
       </div>
 
       {open ? (
-        <nav id="menu-movil" aria-label="Principal móvil" className="border-t-2 border-carbon md:hidden">
+        <nav id="menu-movil" aria-label="Principal móvil" className="border-t-2 border-carbon lg:hidden">
           <ul>
             {NAV_LINKS.map((link) => (
               <li key={link.href} className="border-b border-carbon/20 last:border-b-0">

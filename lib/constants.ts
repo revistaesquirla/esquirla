@@ -45,6 +45,7 @@ export const NAV_LINKS = [
   { href: '/', label: 'Inicio' },
   { href: '/ediciones', label: 'Ediciones' },
   { href: '/posts', label: 'Posts' },
+  { href: '/calendario', label: 'Calendario' },   // ← nueva
   { href: '/sobre', label: 'Sobre' },
   { href: '/participa', label: 'Participa' },
 ];
@@ -54,6 +55,7 @@ export const ADMIN_LINKS = [
   { href: '/admin/ediciones', label: 'Ediciones' },
   { href: '/admin/posts', label: 'Posts' },
   { href: '/admin/fragmentos', label: 'Fragmentos' },
-  { href: '/admin/solicitudes', label: 'Solicitudes' },   // ← esta línea es nueva
+  { href: '/admin/solicitudes', label: 'Solicitudes' },
+  { href: '/admin/fechas', label: 'Fechas' },   // ← nueva (dentro de ADMIN_LINKS)
   { href: '/admin/configuracion', label: 'Configuración' },
 ];
