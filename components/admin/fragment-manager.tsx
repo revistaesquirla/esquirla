@@ -31,7 +31,7 @@ export function FragmentManager({
     saveFragment,
     null,
   );
-  const [kind, setKind] = useState<'quote' | 'photo' | 'excerpt'>('quote');
+  const [kind, setKind] = useState<'quote' | 'photo' | 'excerpt' | 'video'>('quote')
   const [image, setImage] = useState<UploadedFile>(EMPTY_FILE);
   const [working, startWork] = useTransition();
   const [actionError, setActionError] = useState<string | null>(null);
