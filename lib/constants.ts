@@ -56,6 +56,7 @@ export const ADMIN_LINKS = [
   { href: '/admin/posts', label: 'Posts' },
   { href: '/admin/fragmentos', label: 'Fragmentos' },
   { href: '/admin/solicitudes', label: 'Solicitudes' },
-  { href: '/admin/fechas', label: 'Fechas' },   // ← nueva (dentro de ADMIN_LINKS)
+  { href: '/admin/fechas', label: 'Fechas' },
+  { href: '/admin/vinculos', label: 'Vínculos' },   // ← nueva
   { href: '/admin/configuracion', label: 'Configuración' },
 ];
