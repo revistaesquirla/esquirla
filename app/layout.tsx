@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Archivo, Archivo_Black, JetBrains_Mono } from 'next/font/google';
 import { getSettings } from '@/lib/queries';
-import { siteUrl } from '@/lib/utils';
+import { instagramUrl, siteUrl } from '@/lib/utils';
 import './globals.css';
 
 const display = Archivo_Black({
@@ -40,6 +40,9 @@ export async function generateMetadata(): Promise<Metadata> {
       description: tagline,
     },
     twitter: { card: 'summary_large_image' },
+    verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+      ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+      : undefined,
   };
 }
 
@@ -49,17 +52,29 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const settings = await getSettings().catch(() => null);
+  const name = settings?.magazine_name ?? 'ESQUIRLA';
+  const igUrl = instagramUrl(settings?.instagram ?? null);
+
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name,
+    url: siteUrl(),
+    description: settings?.tagline ?? undefined,
+    sameAs: igUrl ? [igUrl] : undefined,
+  };
+
   return (
     <html lang="es" className={`${display.variable} ${sans.variable} ${mono.variable}`}>
       <body className="min-h-dvh antialiased">
-        <a
-          href="#contenido"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:border-2 focus:border-carbon focus:bg-paper focus:px-4 focus:py-2 focus:font-mono focus:text-xs"
-        >
-          Saltar al contenido
-        </a>
+        <a href="#contenido" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:border-2 focus:border-carbon focus:bg-paper focus:px-4 focus:py-2 focus:font-mono focus:text-xs">Saltar al contenido</a>
         {children}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
       </body>
     </html>
   );

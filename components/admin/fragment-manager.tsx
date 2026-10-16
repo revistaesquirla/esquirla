@@ -1,11 +1,22 @@
 'use client';
 
-import { useActionState, useState } from 'react';
-import { deleteFragment, saveFragment } from '@/actions/fragments';
+import { startTransition, useActionState, useEffect, useRef, useState, useTransition } from 'react';
+import type { FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+  deleteFragment,
+  reorderFragment,
+  saveFragment,
+  setFragmentStatus,
+  type FragmentMove,
+} from '@/actions/fragments';
 import { ConfirmAction } from '@/components/admin/confirm-action';
 import { ImageUploader, type UploadedFile } from '@/components/admin/uploader';
-import { Feedback, Field, StatusBadge, SubmitButton } from '@/components/admin/ui';
+import { Feedback, Field, StatusBadge } from '@/components/admin/ui';
+import { HOME_FRAGMENT_LIMIT } from '@/lib/fragments-config';
 import type { ActionResult, FragmentWithPost, PostWithCategory } from '@/types/database';
+
+const EMPTY_FILE: UploadedFile = { path: null, url: null, size: null, name: null };
 
 export function FragmentManager({
   fragments,
@@ -14,13 +25,49 @@ export function FragmentManager({
   fragments: FragmentWithPost[];
   posts: PostWithCategory[];
 }) {
-  const [state, formAction] = useActionState<ActionResult | null, FormData>(saveFragment, null);
+  const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
+  const [state, formAction, saving] = useActionState<ActionResult | null, FormData>(
+    saveFragment,
+    null,
+  );
   const [kind, setKind] = useState<'quote' | 'photo' | 'excerpt'>('quote');
-  const [image, setImage] = useState<UploadedFile>({ path: null, url: null, size: null, name: null });
+  const [image, setImage] = useState<UploadedFile>(EMPTY_FILE);
+  const [working, startWork] = useTransition();
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (state?.ok) {
+      formRef.current?.reset();
+      setImage(EMPTY_FILE);
+    }
+  }, [state]);
+
+  // Enviamos a mano para que React NO limpie el formulario cuando hay un error.
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    startTransition(() => formAction(formData));
+  }
+
+  function run(task: () => Promise<ActionResult>) {
+    startWork(async () => {
+      const result = await task();
+      setActionError(result.ok ? null : result.error);
+      router.refresh();
+    });
+  }
+
+  const onHome = new Set(
+    fragments
+      .filter((fragment) => fragment.status === 'published')
+      .slice(0, HOME_FRAGMENT_LIMIT)
+      .map((fragment) => fragment.id),
+  );
 
   return (
     <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-      <form action={formAction} className="marco h-fit space-y-5 p-5">
+      <form ref={formRef} onSubmit={handleSubmit} className="marco h-fit space-y-5 p-5">
         <h2 className="titular text-2xl">Nuevo fragmento</h2>
 
         <input type="hidden" name="image_path" value={image.path ?? ''} />
@@ -79,25 +126,31 @@ export function FragmentManager({
           <input id="attribution" name="attribution" className="campo" />
         </Field>
 
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Orden" htmlFor="position">
-            <input id="position" name="position" type="number" min={0} defaultValue={0} className="campo" />
-          </Field>
+        <Field label="Estado" htmlFor="fragment-status">
+          <select id="fragment-status" name="status" defaultValue="published" className="campo">
+            <option value="published">Publicado</option>
+            <option value="draft">Borrador</option>
+            <option value="hidden">Oculto</option>
+          </select>
+        </Field>
 
-          <Field label="Estado" htmlFor="fragment-status">
-            <select id="fragment-status" name="status" defaultValue="published" className="campo">
-              <option value="published">Publicado</option>
-              <option value="draft">Borrador</option>
-              <option value="hidden">Oculto</option>
-            </select>
-          </Field>
-        </div>
-
-        <SubmitButton className="w-full">Agregar fragmento</SubmitButton>
+        <button type="submit" disabled={saving} aria-busy={saving} className="boton w-full">
+          {saving ? 'Guardando…' : 'Agregar fragmento'}
+        </button>
       </form>
 
       <section>
         <h2 className="titular text-2xl">En la portada</h2>
+        <p className="mt-1 text-sm text-carbon/60">
+          Usa las flechas para cambiar el orden. En la portada caben {HOME_FRAGMENT_LIMIT}: los
+          primeros de la lista que estén publicados.
+        </p>
+
+        {actionError ? (
+          <p role="alert" className="mt-3 text-xs font-bold text-rojo-oscuro">
+            {actionError}
+          </p>
+        ) : null}
 
         {fragments.length === 0 ? (
           <div className="mt-4 border-2 border-dashed border-carbon/40 p-8 text-center text-sm text-carbon/70">
@@ -106,43 +159,102 @@ export function FragmentManager({
           </div>
         ) : (
           <ul className="mt-4 space-y-3">
-            {fragments.map((fragment) => (
-              <li key={fragment.id} className="marco p-4">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="dato text-carbon/45">
-                    #{fragment.position} · {labelFor(fragment.kind)}
-                  </span>
-                  <StatusBadge status={fragment.status} kind="post" />
-                </div>
+            {fragments.map((fragment, index) => {
+              const move = (direction: FragmentMove) =>
+                run(() => reorderFragment(fragment.id, direction));
+              const isPublished = fragment.status === 'published';
 
-                {fragment.image_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={fragment.image_url}
-                    alt=""
-                    className="mt-3 aspect-square w-24 border-2 border-carbon object-cover"
-                  />
-                ) : null}
+              return (
+                <li key={fragment.id} className="marco flex gap-3 p-4">
+                  <div className="flex flex-col gap-1">
+                    <MoveButton label="Al inicio" symbol="⇈" disabled={working || index === 0} onClick={() => move('top')} />
+                    <MoveButton label="Subir" symbol="▲" disabled={working || index === 0} onClick={() => move('up')} />
+                    <MoveButton label="Bajar" symbol="▼" disabled={working || index === fragments.length - 1} onClick={() => move('down')} />
+                    <MoveButton label="Al final" symbol="⇊" disabled={working || index === fragments.length - 1} onClick={() => move('bottom')} />
+                  </div>
 
-                {fragment.body ? <p className="mt-3 leading-snug">{fragment.body}</p> : null}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="dato text-carbon/45">
+                        #{index + 1} · {labelFor(fragment.kind)}
+                      </span>
+                      <StatusBadge status={fragment.status} kind="post" />
+                    </div>
 
-                <p className="dato mt-2 text-carbon/45">
-                  {fragment.post?.title ?? fragment.attribution ?? 'Sin atribución'}
-                </p>
+                    {isPublished ? (
+                      <p className={`dato mt-1 ${onHome.has(fragment.id) ? 'text-rojo' : 'text-carbon/45'}`}>
+                        {onHome.has(fragment.id)
+                          ? 'Se ve en la portada'
+                          : 'No cabe en la portada: súbelo para que se vea'}
+                      </p>
+                    ) : null}
 
-                <div className="mt-4">
-                  <ConfirmAction
-                    action={() => deleteFragment(fragment.id)}
-                    label="Eliminar"
-                    question="¿Eliminar este fragmento de la portada?"
-                  />
-                </div>
-              </li>
-            ))}
+                    {fragment.image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={fragment.image_url}
+                        alt=""
+                        className="mt-3 aspect-square w-24 border-2 border-carbon object-cover"
+                      />
+                    ) : null}
+
+                    {fragment.body ? <p className="mt-3 leading-snug">{fragment.body}</p> : null}
+
+                    <p className="dato mt-2 text-carbon/45">
+                      {fragment.post?.title ?? fragment.attribution ?? 'Sin atribución'}
+                    </p>
+
+                    <div className="mt-4 space-y-3">
+                      <button
+                        type="button"
+                        disabled={working}
+                        onClick={() =>
+                          run(() => setFragmentStatus(fragment.id, isPublished ? 'hidden' : 'published'))
+                        }
+                        className="boton-fantasma px-4 py-2"
+                      >
+                        {isPublished ? 'Ocultar' : 'Publicar'}
+                      </button>
+
+                      <ConfirmAction
+                        action={() => deleteFragment(fragment.id)}
+                        label="Eliminar"
+                        question="¿Eliminar este fragmento de la portada?"
+                      />
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
     </div>
+  );
+}
+
+function MoveButton({
+  label,
+  symbol,
+  disabled,
+  onClick,
+}: {
+  label: string;
+  symbol: string;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className="border-2 border-carbon px-2 py-1 font-mono text-xs transition-colors hover:bg-carbon hover:text-paper disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-carbon"
+    >
+      {symbol}
+    </button>
   );
 }
 

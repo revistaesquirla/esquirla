@@ -1,3 +1,4 @@
+import { HOME_FRAGMENT_LIMIT } from '@/lib/fragments-config';
 import Link from 'next/link';
 import { CoverImage } from '@/components/public/cover-image';
 import { EditionCard } from '@/components/public/edition-card';
@@ -20,7 +21,7 @@ export default async function HomePage() {
     getFeaturedEdition().catch(() => null),
     getPublishedEditions().catch(() => []),
     getPublishedPosts({ limit: 5 }).catch(() => []),
-    getPublishedFragments(6).catch(() => []),
+    getPublishedFragments(HOME_FRAGMENT_LIMIT).catch(() => []),
   ]);
 
   const otherEditions = editions.filter((edition) => edition.id !== featured?.id).slice(0, 3);

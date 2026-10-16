@@ -1,14 +1,13 @@
 'use client';
 
-import { useActionState, useEffect, useRef } from 'react';
-import { useFormStatus } from 'react-dom';
+import { startTransition, useActionState, useEffect, useRef } from 'react';
+import type { FormEvent } from 'react';
 import { submitFragment, submitParticipa } from '@/actions/submissions';
 import type { ActionResult } from '@/types/database';
 
 const TOPICS = ['Fotografías', 'Una historia', 'Ilustraciones', 'Música', 'Una entrevista', 'Ayudar con una edición', 'Otro'];
 
-function Send({ label }: { label: string }) {
-  const { pending } = useFormStatus();
+function Send({ label, pending }: { label: string; pending: boolean }) {
   return (
     <button type="submit" disabled={pending} aria-busy={pending} className="boton">
       {pending ? 'Enviando…' : label}
@@ -45,16 +44,29 @@ function Honeypot() {
   );
 }
 
+/**
+ * Envía el formulario a mano. Si usáramos action={...}, React 19 borraría
+ * todo lo escrito cuando el servidor responde con un error de validación.
+ */
+function useManualSubmit(dispatch: (formData: FormData) => void) {
+  return (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    startTransition(() => dispatch(formData));
+  };
+}
+
 export function FragmentForm() {
-  const [state, action] = useActionState<ActionResult | null, FormData>(submitFragment, null);
+  const [state, action, pending] = useActionState<ActionResult | null, FormData>(submitFragment, null);
   const formRef = useRef<HTMLFormElement>(null);
+  const handleSubmit = useManualSubmit(action);
 
   useEffect(() => {
     if (state?.ok) formRef.current?.reset();
   }, [state]);
 
   return (
-    <form ref={formRef} action={action} className="relative space-y-4">
+    <form ref={formRef} onSubmit={handleSubmit} className="relative space-y-4">
       <Notice state={state} />
       <Honeypot />
 
@@ -88,21 +100,22 @@ export function FragmentForm() {
         <Err state={state} name="consent" />
       </div>
 
-      <Send label="Enviar fragmento" />
+      <Send label="Enviar fragmento" pending={pending} />
     </form>
   );
 }
 
 export function ParticipaForm() {
-  const [state, action] = useActionState<ActionResult | null, FormData>(submitParticipa, null);
+  const [state, action, pending] = useActionState<ActionResult | null, FormData>(submitParticipa, null);
   const formRef = useRef<HTMLFormElement>(null);
+  const handleSubmit = useManualSubmit(action);
 
   useEffect(() => {
     if (state?.ok) formRef.current?.reset();
   }, [state]);
 
   return (
-    <form ref={formRef} action={action} className="relative space-y-4">
+    <form ref={formRef} onSubmit={handleSubmit} className="relative space-y-4">
       <Notice state={state} />
       <Honeypot />
 
@@ -147,7 +160,7 @@ export function ParticipaForm() {
         <Err state={state} name="consent" />
       </div>
 
-      <Send label="Enviar propuesta" />
+      <Send label="Enviar propuesta" pending={pending} />
     </form>
   );
 }

@@ -89,6 +89,7 @@ export async function getPublishedFragments(limit = 6): Promise<FragmentWithPost
     .select('*, post:posts(id, slug, title)')
     .eq('status', 'published')
     .order('position', { ascending: true })
+    .order('created_at', { ascending: true })
     .limit(limit);
   return (data as unknown as FragmentWithPost[]) ?? [];
 }
@@ -139,7 +140,8 @@ export async function getAllFragments(): Promise<FragmentWithPost[]> {
   const { data } = await supabase
     .from('fragments')
     .select('*, post:posts(id, slug, title)')
-    .order('position', { ascending: true });
+    .order('position', { ascending: true })
+    .order('created_at', { ascending: true });
   return (data as unknown as FragmentWithPost[]) ?? [];
 }
 
