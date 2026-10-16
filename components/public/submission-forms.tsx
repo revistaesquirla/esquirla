@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { startTransition, useActionState, useEffect, useRef } from 'react';
 import type { FormEvent } from 'react';
 import { submitFragment, submitParticipa } from '@/actions/submissions';
@@ -41,6 +42,26 @@ function Honeypot() {
       <label htmlFor="website">No llenes este campo</label>
       <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" />
     </div>
+  );
+}
+
+function MinorsNote() {
+  return (
+    <p className="text-xs leading-relaxed text-carbon/60">
+      Si eres menor de 18 años, pide permiso a tu madre, padre o acudiente antes de enviar.
+    </p>
+  );
+}
+
+function PrivacyLink() {
+  return (
+    <>
+      {' '}
+      <Link href="/privacidad" target="_blank" className="underline decoration-rojo underline-offset-2">
+        Política de privacidad
+      </Link>
+      .
+    </>
   );
 }
 
@@ -89,12 +110,15 @@ export function FragmentForm() {
         <input id="frag-name" name="name" maxLength={80} className="campo" placeholder="Déjalo vacío para salir como Anónimo" />
       </div>
 
+      <MinorsNote />
+
       <div>
         <label className="flex items-start gap-3 border-2 border-carbon p-3">
           <input type="checkbox" name="consent" className="mt-1 h-4 w-4 accent-[#E02118]" />
           <span className="text-xs leading-relaxed text-carbon/75">
             Acepto que mi mensaje se publique en la revista si el equipo lo aprueba, con el nombre
-            que escribí (o como Anónimo si lo dejé vacío).
+            que escribí (o como Anónimo si lo dejé vacío), y autorizo el tratamiento de mis datos.
+            <PrivacyLink />
           </span>
         </label>
         <Err state={state} name="consent" />
@@ -149,12 +173,15 @@ export function ParticipaForm() {
         <Err state={state} name="body" />
       </div>
 
+      <MinorsNote />
+
       <div>
         <label className="flex items-start gap-3 border-2 border-carbon p-3">
           <input type="checkbox" name="consent" className="mt-1 h-4 w-4 accent-[#E02118]" />
           <span className="text-xs leading-relaxed text-carbon/75">
-            Acepto que el equipo de la revista use estos datos solo para responderme y valorar mi
+            Autorizo que el equipo de la revista use estos datos solo para responderme y valorar mi
             propuesta. No se publican.
+            <PrivacyLink />
           </span>
         </label>
         <Err state={state} name="consent" />

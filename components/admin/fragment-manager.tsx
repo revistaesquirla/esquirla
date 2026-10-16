@@ -90,6 +90,7 @@ export function FragmentManager({
             <option value="quote">Frase</option>
             <option value="excerpt">Extracto de un post</option>
             <option value="photo">Fotografía</option>
+	    <option value="video">Video (enlace)</option>
           </select>
         </Field>
 
@@ -110,7 +111,17 @@ export function FragmentManager({
         >
           <textarea id="body" name="body" rows={3} className="campo resize-y" maxLength={400} />
         </Field>
-
+        {kind === 'video' ? (
+          <Field label="Enlace del video" htmlFor="video_url" hint="YouTube, Vimeo o Instagram (reel o post).">
+            <input
+              id="video_url"
+              name="video_url"
+              type="url"
+              className="campo"
+              placeholder="https://www.youtube.com/watch?v=…"
+            />
+          </Field>
+        ) : null}
         <Field label="De dónde sale" htmlFor="post_id" hint="Opcional: enlaza el fragmento a un post.">
           <select id="post_id" name="post_id" className="campo">
             <option value="">Sin enlace</option>
@@ -260,6 +271,7 @@ function MoveButton({
 
 function labelFor(kind: string) {
   if (kind === 'photo') return 'Fotografía';
+     if (kind === 'video') return 'Video';
   if (kind === 'excerpt') return 'Extracto';
   return 'Frase';
 }

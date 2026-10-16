@@ -16,6 +16,7 @@
     "@aws-sdk/s3-request-presigner": "^3.1135.0",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.116.0",
+    "@tiptap/core": "^2.27.3",
     "@tiptap/extension-image": "^2.27.3",
     "@tiptap/extension-link": "^2.27.3",
     "@tiptap/extension-placeholder": "^2.27.3",

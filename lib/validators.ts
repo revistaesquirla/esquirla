@@ -64,11 +64,12 @@ export const categorySchema = z.object({
 });
 
 export const fragmentSchema = z.object({
-  kind: z.enum(['quote', 'photo', 'excerpt']),
+  kind: z.enum(['quote', 'photo', 'excerpt', 'video']),
   body: optionalText(400),
   attribution: optionalText(120),
   image_path: optionalText(400),
   image_url: optionalText(800),
+  video_url: optionalText(500),
   post_id: z
     .string()
     .uuid()

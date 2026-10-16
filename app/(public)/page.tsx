@@ -1,3 +1,4 @@
+import { VideoEmbed } from '@/components/public/video-embed';
 import { HOME_FRAGMENT_LIMIT } from '@/lib/fragments-config';
 import Link from 'next/link';
 import { CoverImage } from '@/components/public/cover-image';
@@ -127,6 +128,11 @@ export default async function HomePage() {
                   />
                 ) : null}
 
+                {fragment.kind === 'video' && fragment.video_url ? (
+                  <div className="mb-4">
+                    <VideoEmbed url={fragment.video_url} />
+                  </div>
+                ) : null}
                 {fragment.body ? <p className="text-lg leading-snug">{fragment.body}</p> : null}
 
                 <p className="dato mt-4 opacity-60">

@@ -1,3 +1,4 @@
+import { PostContent } from '@/components/public/post-content';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -92,12 +93,7 @@ export default async function PostPage({ params }: Params) {
       ) : null}
 
       {post.content_html ? (
-        <div
-          className="prosa mt-10"
-          // El HTML lo genera el editor del panel (solo administradores) a
-          // partir de un conjunto cerrado de nodos de TipTap.
-          dangerouslySetInnerHTML={{ __html: post.content_html }}
-        />
+      <PostContent html={post.content_html} />
       ) : (
         <p className="mt-10 text-carbon/60">Este post todavía no tiene contenido.</p>
       )}

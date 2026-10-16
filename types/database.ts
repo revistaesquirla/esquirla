@@ -2,7 +2,7 @@
 // (o genera el archivo con: npx supabase gen types typescript --project-id XXX).
 
 export type ContentStatus = 'draft' | 'published' | 'hidden';
-export type FragmentKind = 'quote' | 'photo' | 'excerpt';
+export type FragmentKind = 'quote' | 'photo' | 'excerpt' | 'video';
 export type UserRole = 'admin' | 'reader';
 
 export type Profile = {
@@ -71,6 +71,7 @@ export type Fragment = {
   attribution: string | null;
   image_path: string | null;
   image_url: string | null;
+  video_url: string | null;
   post_id: string | null;
   edition_id: string | null;
   status: ContentStatus;
